@@ -152,7 +152,8 @@ public final class AutoWalkController {
 	}
 
 	private static boolean mustRelease(Minecraft client) {
-		return client.screen != null
+		// Since 26.2 the current screen lives in Minecraft#gui instead of Minecraft#screen.
+		return client.gui.screen() != null
 				|| client.player == null
 				|| client.level == null
 				|| client.player.isDeadOrDying();
