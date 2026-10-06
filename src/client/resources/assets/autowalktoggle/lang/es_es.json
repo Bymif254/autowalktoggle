@@ -1,0 +1,6 @@
+{
+	"autowalktoggle.command.enabled": "Activado. Pulsa una tecla de movimiento para engancharla.",
+	"autowalktoggle.command.disabled": "Desactivado. El movimiento funciona como en vanilla.",
+	"autowalktoggle.command.status.enabled": "Estado: ACTIVADO",
+	"autowalktoggle.command.status.disabled": "Estado: DESACTIVADO"
+}

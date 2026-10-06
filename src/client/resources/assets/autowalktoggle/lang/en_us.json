@@ -1,0 +1,6 @@
+{
+	"autowalktoggle.command.enabled": "Enabled. Tap a movement key to lock it.",
+	"autowalktoggle.command.disabled": "Disabled. Movement works like vanilla.",
+	"autowalktoggle.command.status.enabled": "Status: ENABLED",
+	"autowalktoggle.command.status.disabled": "Status: DISABLED"
+}
