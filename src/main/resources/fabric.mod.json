@@ -1,0 +1,24 @@
+{
+	"schemaVersion": 1,
+	"id": "autowalktoggle",
+	"version": "${version}",
+	"name": "AutoWalk Toggle",
+	"description": "Client-side mod: tap a movement key once and it stays held until you tap it again or press another direction. Toggle with /autowalk.",
+	"authors": [
+		"Miguel"
+	],
+	"contact": {},
+	"license": "MIT",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"com.miguel.autowalktoggle.AutoWalkToggleClient"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.19.5",
+		"minecraft": "~26.1.2",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
