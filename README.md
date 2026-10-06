@@ -1,6 +1,6 @@
 # AutoWalk Toggle
 
-Mod de Fabric **solo cliente** para Minecraft Java **26.1.2**. Funciona en cualquier servidor, también vanilla.
+Mod de Fabric **solo cliente** para Minecraft Java **26.2**. Funciona en cualquier servidor, también vanilla.
 
 Con el mod activado, pulsas una vez una tecla de movimiento (las que tengas en Controles) y se queda "enganchada" como si la mantuvieras pulsada.
 
@@ -23,9 +23,9 @@ Por defecto empieza **desactivado**.
 
 | | |
 |---|---|
-| Minecraft | 26.1.2 |
+| Minecraft | 26.2 |
 | Fabric Loader | 0.19.5 |
-| Fabric API | 0.155.2+26.1.2 |
+| Fabric API | 0.161.0+26.2 |
 | Fabric Loom | 1.18.2 |
 | Gradle | 9.7.1 |
 | Java | 25 |
