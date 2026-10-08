@@ -2,5 +2,7 @@
 	"autowalktoggle.command.enabled": "Activado. Pulsa una tecla de movimiento para engancharla.",
 	"autowalktoggle.command.disabled": "Desactivado. El movimiento funciona como en vanilla.",
 	"autowalktoggle.command.status.enabled": "Estado: ACTIVADO",
-	"autowalktoggle.command.status.disabled": "Estado: DESACTIVADO"
+	"autowalktoggle.command.status.disabled": "Estado: DESACTIVADO",
+	"autowalktoggle.command.forward": "Andando hacia delante. Pulsa cualquier tecla de movimiento para parar.",
+	"autowalktoggle.command.backward": "Andando hacia atrás. Pulsa cualquier tecla de movimiento para parar."
 }
