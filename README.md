@@ -16,6 +16,8 @@ Con el mod activado, pulsas una vez una tecla de movimiento (las que tengas en C
 | `/autowalk off` | Desactiva el mod (y suelta la tecla enganchada) |
 | `/autowalk toggle` | Alterna el estado |
 | `/autowalk status` | Muestra el estado |
+| `/autowalk w` | Empieza a andar hacia delante solo (activa el mod si estaba desactivado) |
+| `/autowalk s` | Empieza a andar hacia atrás solo (activa el mod si estaba desactivado) |
 
 Por defecto empieza **desactivado**.
 
