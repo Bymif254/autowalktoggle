@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.network.chat.Component;
 
 /**
@@ -22,7 +23,16 @@ public final class AutoWalkCommand {
 				.then(ClientCommands.literal("on").executes(context -> setEnabled(context, true)))
 				.then(ClientCommands.literal("off").executes(context -> setEnabled(context, false)))
 				.then(ClientCommands.literal("toggle").executes(context -> setEnabled(context, !AutoWalkController.isEnabled())))
-				.then(ClientCommands.literal("status").executes(AutoWalkCommand::status)));
+				.then(ClientCommands.literal("status").executes(AutoWalkCommand::status))
+				.then(ClientCommands.literal("w").executes(context -> lock(context, context.getSource().getClient().options.keyUp, "autowalktoggle.command.forward")))
+				.then(ClientCommands.literal("s").executes(context -> lock(context, context.getSource().getClient().options.keyDown, "autowalktoggle.command.backward"))));
+	}
+
+	/** /autowalk w|s: walk as if the forward / back key had been tapped with the mod enabled. */
+	private static int lock(CommandContext<FabricClientCommandSource> context, KeyMapping key, String messageKey) {
+		AutoWalkController.requestLock(key);
+		send(context, Component.translatable(messageKey).withStyle(ChatFormatting.GREEN));
+		return 1;
 	}
 
 	private static int setEnabled(CommandContext<FabricClientCommandSource> context, boolean enabled) {

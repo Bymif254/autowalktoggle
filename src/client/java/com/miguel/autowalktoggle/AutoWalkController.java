@@ -34,6 +34,12 @@ public final class AutoWalkController {
 	/** Level seen in the previous tick, to detect world / server / dimension changes. */
 	private static ClientLevel lastLevel = null;
 
+	/**
+	 * Key requested by /autowalk w|s. The command runs while the chat is still open (and an open menu releases
+	 * the lock), so it is locked on the first tick in which no menu is open.
+	 */
+	private static KeyMapping pendingKey = null;
+
 	private AutoWalkController() {
 	}
 
@@ -45,8 +51,15 @@ public final class AutoWalkController {
 		enabled = value;
 
 		if (!value) {
+			pendingKey = null;
 			releaseLockedKey();
 		}
+	}
+
+	/** /autowalk w|s: enables the mod and locks the given movement key as soon as the chat closes. */
+	public static void requestLock(KeyMapping key) {
+		enabled = true;
+		pendingKey = key;
 	}
 
 	/** Releases the locked key immediately (sets it up) and forgets it. Safe to call at any time. */
@@ -105,7 +118,20 @@ public final class AutoWalkController {
 			return;
 		}
 
-		// 4. A key is already locked.
+		// 4. /autowalk w|s: lock the requested key now that no menu is open.
+		if (pendingKey != null) {
+			if (lockedKey != null && lockedKey != pendingKey) {
+				lockedKey.setDown(lockedKeyPhysicallyDown);
+			}
+
+			lockedKey = pendingKey;
+			pendingKey = null;
+			lockedKeyPhysicallyDown = lockedKey.isDown();
+			lockedKey.setDown(true);
+			return;
+		}
+
+		// 5. A key is already locked.
 		if (lockedKey != null) {
 			if (pressedLocked != null || pressedOther != null) {
 				// a) Same key pressed again, or b) another direction pressed: unlock.
@@ -121,7 +147,7 @@ public final class AutoWalkController {
 			return;
 		}
 
-		// 5. Nothing locked: a new press locks that key.
+		// 6. Nothing locked: a new press locks that key.
 		if (pressedOther != null) {
 			lockedKey = pressedOther;
 			lockedKeyPhysicallyDown = lockedKey.isDown();
@@ -147,6 +173,7 @@ public final class AutoWalkController {
 
 	/** Called on disconnect / join. */
 	public static void reset() {
+		pendingKey = null;
 		releaseLockedKey();
 		lastLevel = null;
 	}
