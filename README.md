@@ -19,7 +19,24 @@ Con el mod activado, pulsas una vez una tecla de movimiento (las que tengas en C
 | `/autowalk w` | Empieza a andar hacia delante solo (activa el mod si estaba desactivado) |
 | `/autowalk s` | Empieza a andar hacia atrás solo (activa el mod si estaba desactivado) |
 
+| `/autowalk menu` | Abre el menú de la ruta |
+| `/autowalk route start` | Inicia la ruta guardada |
+| `/autowalk route stop` | Detiene la ruta |
+| `/autowalk route status` | Muestra por qué punto va la ruta |
+
 Por defecto empieza **desactivado**.
+
+## Ruta (cambios de dirección automáticos)
+
+En `/autowalk menu` añades puntos con coordenadas **con decimales** (X, Y, Z) y lo que hay que hacer al llegar: Adelante, Atrás, Izquierda, Derecha o Parar.
+
+- **Punto en mi posición** y **Aquí** rellenan las coordenadas exactas de donde estás.
+- **Bucle**: al terminar el último punto, vuelve a empezar por el primero.
+- **Empezar**: tecla con la que arranca la ruta al pulsar **Iniciar ruta** (o "tú pulsas").
+
+**Precisión:** el mod no espera a pasar el punto, porque el jugador avanza unos 0,2 bloques por tick y sigue deslizándose después de soltar la tecla. Cada tick calcula, con la física de Minecraft (velocidad y rozamiento del suelo), dónde se pararía si cambiara de tecla en ese momento, y cambia en el tick que deja al jugador más cerca del punto exacto. El error máximo es de medio tick de movimiento: unos 0,1 bloques, 1-2 píxeles.
+
+La ruta se guarda en `config/autowalktoggle-route.json`.
 
 ## Versiones
 
