@@ -29,6 +29,7 @@ Por defecto empieza **desactivado**.
 
 En `/autowalk menu` añades puntos con coordenadas **con decimales** (X, Y, Z) y lo que hay que hacer al llegar: Adelante, Atrás, Izquierda, Derecha o Parar.
 
+- **Espera** (segundos, por ejemplo `0.5`): al llegar al punto se para del todo, espera ese tiempo y después pulsa la tecla nueva. Sirve para no chocar con vallas o esquinas al girar. Con `0` gira al momento.
 - **Punto en mi posición** y **Aquí** rellenan las coordenadas exactas de donde estás.
 - **Bucle**: al terminar el último punto, vuelve a empezar por el primero.
 - **Empezar**: tecla con la que arranca la ruta al pulsar **Iniciar ruta** (o "tú pulsas").
