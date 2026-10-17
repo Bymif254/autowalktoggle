@@ -15,13 +15,10 @@ Con el mod activado, pulsas una vez una tecla de movimiento (las que tengas en C
 | `/autowalk on` | Activa el mod |
 | `/autowalk off` | Desactiva el mod (y suelta la tecla enganchada) |
 | `/autowalk toggle` | Alterna el estado |
-| `/autowalk status` | Muestra el estado |
+| `/autowalk status` | Muestra el estado y cuántos puntos de ruta hay |
 | `/autowalk w` | Empieza a andar hacia delante solo (activa el mod si estaba desactivado) |
 | `/autowalk s` | Empieza a andar hacia atrás solo (activa el mod si estaba desactivado) |
 | `/autowalk menu` | Abre el menú de la ruta |
-| `/autowalk route start` | Activa la ruta guardada |
-| `/autowalk route stop` | Desactiva la ruta |
-| `/autowalk route status` | Dice si la ruta está activa |
 
 Por defecto empieza **desactivado**.
 
@@ -29,11 +26,12 @@ Por defecto empieza **desactivado**.
 
 En `/autowalk menu` añades puntos con coordenadas **con decimales** (X, Y, Z) y lo que hay que hacer al llegar: Adelante, Atrás, Izquierda, Derecha o Parar.
 
-Los puntos **no tienen orden**: con la ruta activa, cualquier punto hacia el que andes se usa al llegar. Si te paras, te vas a otro sitio o vuelves a cualquier posición, basta con volver a andar (pulsa una tecla) y la ruta sigue sola en el siguiente punto que encuentres. Los puntos que dejas detrás no cuentan. Un punto que acaba de usarse, o junto al que empiezas a andar, no vuelve a actuar hasta que te alejas más de 1 bloque, para que no te cambie la dirección que has elegido.
+No hay que activar la ruta: **con el mod activado (`/autowalk on`), los puntos funcionan solos**. Si no quieres ruta, borra los puntos.
+
+Los puntos **no tienen orden**: cualquier punto hacia el que andes se usa al llegar. Si te paras, te vas a otro sitio o vuelves a cualquier posición, basta con volver a andar (pulsa una tecla) y la ruta sigue sola en el siguiente punto que encuentres. Los puntos que dejas detrás no cuentan. Un punto que acaba de usarse, o junto al que empiezas a andar, no vuelve a actuar hasta que te alejas más de 1 bloque, para que no te cambie la dirección que has elegido.
 
 - **Espera** (segundos, por ejemplo `0.5`): al llegar al punto se para del todo, espera ese tiempo y después pulsa la tecla nueva. Sirve para no chocar con vallas o esquinas al girar. Con `0` gira al momento.
 - **Punto en mi posición** y **Aquí** rellenan las coordenadas exactas de donde estás.
-- **Empezar**: tecla con la que empiezas a andar al pulsar **Activar ruta** (o "tú pulsas").
 
 **Precisión:** el mod no espera a pasar el punto, porque el jugador avanza unos 0,2 bloques por tick y sigue deslizándose después de soltar la tecla. Cada tick calcula, con la física de Minecraft (velocidad y rozamiento del suelo), dónde se pararía si cambiara de tecla en ese momento, y cambia en el tick que deja al jugador más cerca del punto exacto. El error máximo es de medio tick de movimiento: unos 0,1 bloques, 1-2 píxeles.
 
