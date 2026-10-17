@@ -138,8 +138,8 @@ public class RouteScreen extends Screen {
 
 	private EditBox addCoordinateBox(int x, int y, int width, String value, String hint, java.util.function.Consumer<String> responder) {
 		EditBox box = new EditBox(this.font, x, y, width, 20, Component.literal(hint));
+		// Text is validated when saving (EditBox has no input filter since 26.2).
 		box.setMaxLength(14);
-		box.setFilter(text -> text.matches("-?[0-9]*([.,][0-9]*)?"));
 		box.setValue(value);
 		box.setHint(Component.literal(hint));
 		box.setResponder(responder);
