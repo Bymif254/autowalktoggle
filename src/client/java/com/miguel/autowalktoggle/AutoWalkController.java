@@ -52,7 +52,7 @@ public final class AutoWalkController {
 
 		if (!value) {
 			pendingKey = null;
-			RouteRunner.stop();
+			RouteRunner.reset();
 			releaseLockedKey();
 		}
 	}
@@ -137,6 +137,7 @@ public final class AutoWalkController {
 			lockedKey = pendingKey;
 			pendingKey = null;
 			RouteRunner.cancelWait();
+			RouteRunner.onLockStarted(client);
 			lockedKeyPhysicallyDown = lockedKey.isDown();
 			lockedKey.setDown(true);
 			return;
@@ -186,6 +187,7 @@ public final class AutoWalkController {
 			lockedKey = pressedOther;
 			lockedKeyPhysicallyDown = lockedKey.isDown();
 			lockedKey.setDown(true);
+			RouteRunner.onLockStarted(client);
 		}
 	}
 
@@ -208,7 +210,7 @@ public final class AutoWalkController {
 	/** Called on disconnect / join. */
 	public static void reset() {
 		pendingKey = null;
-		RouteRunner.stop();
+		RouteRunner.reset();
 		releaseLockedKey();
 		lastLevel = null;
 	}

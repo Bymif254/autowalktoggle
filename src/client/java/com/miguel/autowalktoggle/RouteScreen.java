@@ -14,8 +14,8 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 
 /**
- * Route editor opened with /autowalk menu: one row per point (X, Y, Z with decimals, action), plus loop / start
- * options. Rows are edited on a {@link Draft} (as text, so half-typed numbers survive) and only turned into a
+ * Route editor opened with /autowalk menu: one row per point (X, Y, Z with decimals, wait, action), plus the
+ * start option. Rows are edited on a {@link Draft} (as text, so half-typed numbers survive) and only turned into a
  * {@link Route} when saving. Adding, deleting or changing page reopens the screen, which rebuilds the widgets.
  */
 public class RouteScreen extends Screen {
@@ -82,15 +82,11 @@ public class RouteScreen extends Screen {
 		int bottom2 = this.height - 26;
 
 		addRenderableWidget(Button.builder(Component.translatable("autowalktoggle.menu.add"), button -> addPointHere(rowsPerPage))
-				.bounds(left, bottom1, 130, 20).build());
-		addRenderableWidget(Button.builder(loopLabel(), button -> {
-			draft.loop = !draft.loop;
-			button.setMessage(loopLabel());
-		}).bounds(left + 134, bottom1, 100, 20).build());
+				.bounds(left, bottom1, 176, 20).build());
 		addRenderableWidget(Button.builder(startLabel(), button -> {
 			draft.start = draft.start.next();
 			button.setMessage(startLabel());
-		}).bounds(left + 238, bottom1, 128, 20).build());
+		}).bounds(left + 180, bottom1, 186, 20).build());
 
 		addRenderableWidget(Button.builder(Component.literal("<"), button -> reopen(currentPage - 1, null))
 				.bounds(left, bottom2, 20, 20).build()).active = currentPage > 0;
@@ -214,7 +210,6 @@ public class RouteScreen extends Screen {
 	/** Parses the draft. On an invalid row, reopens the menu with an error and returns null. */
 	private Route buildRoute(int currentPage) {
 		Route route = new Route();
-		route.loop = draft.loop;
 		route.start = draft.start;
 
 		for (int i = 0; i < draft.rows.size(); i++) {
@@ -241,11 +236,6 @@ public class RouteScreen extends Screen {
 
 	private int rowsPerPage() {
 		return Math.max(1, (this.height - FIRST_ROW_Y - 60) / ROW_HEIGHT);
-	}
-
-	private Component loopLabel() {
-		return Component.translatable("autowalktoggle.menu.loop",
-				Component.translatable(draft.loop ? "autowalktoggle.menu.yes" : "autowalktoggle.menu.no"));
 	}
 
 	private Component startLabel() {
@@ -286,12 +276,10 @@ public class RouteScreen extends Screen {
 	/** Editable copy of the route, kept across reopens of the screen. */
 	static final class Draft {
 		final List<Row> rows = new ArrayList<>();
-		boolean loop;
 		MoveAction start;
 
 		static Draft from(Route route) {
 			Draft draft = new Draft();
-			draft.loop = route.loop;
 			draft.start = route.start;
 
 			for (Route.Point point : route.points) {

@@ -56,8 +56,8 @@ public final class AutoWalkCommand {
 	private static int routeStatus(CommandContext<FabricClientCommandSource> context) {
 		int points = RouteRunner.route().points.size();
 
-		if (RouteRunner.isRunning()) {
-			send(context, Component.translatable("autowalktoggle.command.route.running", RouteRunner.nextPointNumber(), points).withStyle(ChatFormatting.GREEN));
+		if (RouteRunner.isActive()) {
+			send(context, Component.translatable("autowalktoggle.command.route.running", points).withStyle(ChatFormatting.GREEN));
 		} else {
 			send(context, Component.translatable("autowalktoggle.command.route.idle", points).withStyle(ChatFormatting.YELLOW));
 		}

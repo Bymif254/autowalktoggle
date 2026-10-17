@@ -21,11 +21,8 @@ public final class Route {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AutoWalkToggleClient.MOD_ID);
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
-	/** Points in the order they are visited. */
+	/** Turn points. They have no order: whichever one the player walks into is used. */
 	public List<Point> points = new ArrayList<>();
-
-	/** When the last point is reached, start again from the first one. */
-	public boolean loop = false;
 
 	/** Key locked when the route is started; STOP means "start walking yourself". */
 	public MoveAction start = MoveAction.STOP;

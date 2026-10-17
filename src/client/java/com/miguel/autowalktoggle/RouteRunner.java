@@ -1,13 +1,20 @@
 package com.miguel.autowalktoggle;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Follows the route: while a movement key is locked, switches to the next point's key exactly when the player
- * should turn.
+ * Follows the route: while a movement key is locked, switches to a point's key exactly when the player should turn.
+ *
+ * <p>Points have no order: any point the player walks towards is used, so stopping, walking elsewhere or coming
+ * back to any position just works. A point is "disarmed" after it triggers, and when the player starts walking
+ * near it, so it does not override the direction the player chose; it re-arms once the player is more than
+ * {@link #REARM_DISTANCE} away.
  *
  * <p>Precision: the player moves ~0.2-0.28 blocks per tick and keeps sliding after a key is released, so waiting
  * until the point is crossed would always overshoot. Every tick we simulate how far the player would still slide
@@ -17,15 +24,19 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class RouteRunner {
 	/** How far sideways from the path a point may be and still count (blocks). */
-	private static final double MAX_SIDEWAYS = 1.0;
+	private static final double MAX_SIDEWAYS = 0.75;
 	/** How far above/below a point the player may be (blocks). */
 	private static final double MAX_VERTICAL = 1.5;
+	/** A point slightly behind (lag) still counts; further behind it is ignored (blocks). */
+	private static final double MAX_BEHIND = 0.15;
 	/** When stuck (e.g. against a wall), a point this close counts as reached (blocks). */
 	private static final double STANDING_RADIUS = 0.3;
+	/** A disarmed point works again once the player is this far from it (blocks). */
+	private static final double REARM_DISTANCE = 1.0;
 
 	private static Route route = Route.load();
-	private static boolean running = false;
-	private static int nextIndex = 0;
+	private static boolean active = false;
+	private static final Set<Integer> disarmed = new HashSet<>();
 
 	/** Standing still at a point with a wait time; the action to do when the wait ends. */
 	private static boolean waiting = false;
@@ -43,33 +54,25 @@ public final class RouteRunner {
 	public static void setRoute(Route newRoute) {
 		route = newRoute;
 		route.save();
-
-		if (nextIndex >= route.points.size()) {
-			nextIndex = 0;
-		}
+		disarmed.clear();
 
 		if (route.points.isEmpty()) {
-			running = false;
+			active = false;
 		}
 	}
 
-	public static boolean isRunning() {
-		return running;
+	public static boolean isActive() {
+		return active;
 	}
 
-	/** 1-based number of the next point, for status messages. */
-	public static int nextPointNumber() {
-		return nextIndex + 1;
-	}
-
-	/** Starts the route from its first point. Returns false if the route is empty. */
+	/** Activates the route and, if a start key is set, starts walking with it. Returns false if the route is empty. */
 	public static boolean start(Minecraft client) {
 		if (route.points.isEmpty()) {
 			return false;
 		}
 
-		running = true;
-		nextIndex = 0;
+		active = true;
+		disarmed.clear();
 
 		KeyMapping startKey = route.start.key(client.options);
 
@@ -83,8 +86,14 @@ public final class RouteRunner {
 	}
 
 	public static void stop() {
-		running = false;
+		active = false;
 		waiting = false;
+	}
+
+	/** Disconnect / world change / mod disabled: forget any wait in progress. The route stays active. */
+	static void reset() {
+		waiting = false;
+		disarmed.clear();
 	}
 
 	static boolean isWaiting() {
@@ -108,40 +117,84 @@ public final class RouteRunner {
 		return actionAfterWait.key(client.options);
 	}
 
+	/**
+	 * The player started walking (tapped a key, /autowalk w|s, route start): points they are standing on or next to
+	 * must not change the direction they just chose.
+	 */
+	static void onLockStarted(Minecraft client) {
+		LocalPlayer player = client.player;
+
+		if (player == null) {
+			return;
+		}
+
+		for (int i = 0; i < route.points.size(); i++) {
+			if (horizontalDistance(player, route.points.get(i)) <= REARM_DISTANCE) {
+				disarmed.add(i);
+			}
+		}
+	}
+
 	/** Called by AutoWalkController at the start of every tick in which a key is locked and no menu is open. */
 	static void onLockedTick(Minecraft client) {
 		LocalPlayer player = client.player;
 
-		if (!running || player == null || route.points.isEmpty()) {
+		if (!active || player == null || route.points.isEmpty()) {
 			return;
 		}
 
-		Route.Point target = route.points.get(nextIndex);
-		int waitTicks = (int) Math.round(target.wait * 20);
-		// With a wait, the player first stops exactly on the point (release the key), then turns.
-		MoveAction firstAction = waitTicks > 0 ? MoveAction.STOP : target.action;
+		disarmed.removeIf(index -> index >= route.points.size()
+				|| horizontalDistance(player, route.points.get(index)) > REARM_DISTANCE);
 
-		if (!shouldTurnNow(player, target, firstAction)) {
-			return;
-		}
+		int best = -1;
+		double bestDistance = Double.MAX_VALUE;
 
-		AutoWalkController.changeLockedKey(firstAction.key(client.options));
+		for (int i = 0; i < route.points.size(); i++) {
+			if (disarmed.contains(i)) {
+				continue;
+			}
 
-		if (waitTicks > 0) {
-			waiting = true;
-			waitTicksLeft = waitTicks;
-			actionAfterWait = target.action;
-		}
+			Route.Point point = route.points.get(i);
 
-		nextIndex++;
+			if (shouldTurnNow(player, point, firstAction(point))) {
+				double distance = horizontalDistance(player, point);
 
-		if (nextIndex >= route.points.size()) {
-			nextIndex = 0;
-
-			if (!route.loop) {
-				running = false;
+				if (distance < bestDistance) {
+					best = i;
+					bestDistance = distance;
+				}
 			}
 		}
+
+		if (best < 0) {
+			return;
+		}
+
+		Route.Point target = route.points.get(best);
+		MoveAction firstAction = firstAction(target);
+		AutoWalkController.changeLockedKey(firstAction.key(client.options));
+		disarmed.add(best);
+
+		if (firstAction != target.action) {
+			waiting = true;
+			waitTicksLeft = waitTicks(target);
+			actionAfterWait = target.action;
+		}
+	}
+
+	private static int waitTicks(Route.Point point) {
+		return (int) Math.round(point.wait * 20);
+	}
+
+	/** With a wait, the player first stops exactly on the point (releases the key), then turns. */
+	private static MoveAction firstAction(Route.Point point) {
+		return waitTicks(point) > 0 ? MoveAction.STOP : point.action;
+	}
+
+	private static double horizontalDistance(LocalPlayer player, Route.Point point) {
+		double dx = point.x - player.getX();
+		double dz = point.z - player.getZ();
+		return Math.sqrt(dx * dx + dz * dz);
 	}
 
 	private static boolean shouldTurnNow(LocalPlayer player, Route.Point target, MoveAction action) {
@@ -166,7 +219,7 @@ public final class RouteRunner {
 		double ahead = dx * dirX + dz * dirZ;
 		double sideways = Math.abs(dx * dirZ - dz * dirX);
 
-		if (sideways > MAX_SIDEWAYS || ahead < -0.5) {
+		if (sideways > MAX_SIDEWAYS || ahead < -MAX_BEHIND) {
 			return false;
 		}
 
