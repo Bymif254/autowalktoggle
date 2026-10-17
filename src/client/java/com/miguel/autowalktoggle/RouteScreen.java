@@ -14,8 +14,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 
 /**
- * Route editor opened with /autowalk menu: one row per point (X, Y, Z with decimals, wait, action), plus the
- * start option. Rows are edited on a {@link Draft} (as text, so half-typed numbers survive) and only turned into a
+ * Route editor opened with /autowalk menu: one row per point (X, Y, Z with decimals, wait, action). Rows are edited on a {@link Draft} (as text, so half-typed numbers survive) and only turned into a
  * {@link Route} when saving. Adding, deleting or changing page reopens the screen, which rebuilds the widgets.
  */
 public class RouteScreen extends Screen {
@@ -78,29 +77,17 @@ public class RouteScreen extends Screen {
 			addRow(index, left, FIRST_ROW_Y + i * ROW_HEIGHT, currentPage);
 		}
 
-		int bottom1 = this.height - 50;
-		int bottom2 = this.height - 26;
-
-		addRenderableWidget(Button.builder(Component.translatable("autowalktoggle.menu.add"), button -> addPointHere(rowsPerPage))
-				.bounds(left, bottom1, 176, 20).build());
-		addRenderableWidget(Button.builder(startLabel(), button -> {
-			draft.start = draft.start.next();
-			button.setMessage(startLabel());
-		}).bounds(left + 180, bottom1, 186, 20).build());
+		int bottom = this.height - 26;
 
 		addRenderableWidget(Button.builder(Component.literal("<"), button -> reopen(currentPage - 1, null))
-				.bounds(left, bottom2, 20, 20).build()).active = currentPage > 0;
-		addLabel(Component.literal((currentPage + 1) + "/" + pageCount), left + 39, bottom2 + 6, true);
+				.bounds(left, bottom, 20, 20).build()).active = currentPage > 0;
+		addLabel(Component.literal((currentPage + 1) + "/" + pageCount), left + 39, bottom + 6, true);
 		addRenderableWidget(Button.builder(Component.literal(">"), button -> reopen(currentPage + 1, null))
-				.bounds(left + 58, bottom2, 20, 20).build()).active = currentPage < pageCount - 1;
-		addRenderableWidget(Button.builder(Component.translatable("autowalktoggle.menu.run"), button -> run(currentPage))
-				.bounds(left + 82, bottom2, 90, 20).build());
-		addRenderableWidget(Button.builder(Component.translatable("autowalktoggle.menu.stop"), button -> {
-			RouteRunner.stop();
-			reopen(currentPage, Component.translatable("autowalktoggle.menu.stopped").withStyle(ChatFormatting.YELLOW));
-		}).bounds(left + 176, bottom2, 80, 20).build());
+				.bounds(left + 58, bottom, 20, 20).build()).active = currentPage < pageCount - 1;
+		addRenderableWidget(Button.builder(Component.translatable("autowalktoggle.menu.add"), button -> addPointHere(rowsPerPage))
+				.bounds(left + 82, bottom, 176, 20).build());
 		addRenderableWidget(Button.builder(Component.translatable("autowalktoggle.menu.save"), button -> saveAndClose(currentPage))
-				.bounds(left + 260, bottom2, 106, 20).build());
+				.bounds(left + 262, bottom, 104, 20).build());
 	}
 
 	private void addRow(int index, int left, int y, int currentPage) {
@@ -169,24 +156,6 @@ public class RouteScreen extends Screen {
 		reopen((draft.rows.size() - 1) / rowsPerPage, null);
 	}
 
-	private void run(int currentPage) {
-		Route route = buildRoute(currentPage);
-
-		if (route == null) {
-			return;
-		}
-
-		if (route.points.isEmpty()) {
-			reopen(currentPage, Component.translatable("autowalktoggle.menu.empty").withStyle(ChatFormatting.RED));
-			return;
-		}
-
-		RouteRunner.setRoute(route);
-		this.minecraft.gui.setScreen(null);
-		// The lock is applied on the next tick, once this menu is closed.
-		RouteRunner.start(this.minecraft);
-	}
-
 	private void saveAndClose(int currentPage) {
 		Route route = buildRoute(currentPage);
 
@@ -210,7 +179,6 @@ public class RouteScreen extends Screen {
 	/** Parses the draft. On an invalid row, reopens the menu with an error and returns null. */
 	private Route buildRoute(int currentPage) {
 		Route route = new Route();
-		route.start = draft.start;
 
 		for (int i = 0; i < draft.rows.size(); i++) {
 			Row row = draft.rows.get(i);
@@ -235,15 +203,7 @@ public class RouteScreen extends Screen {
 	}
 
 	private int rowsPerPage() {
-		return Math.max(1, (this.height - FIRST_ROW_Y - 60) / ROW_HEIGHT);
-	}
-
-	private Component startLabel() {
-		if (draft.start == MoveAction.STOP) {
-			return Component.translatable("autowalktoggle.menu.start_manual");
-		}
-
-		return Component.translatable("autowalktoggle.menu.start_with", draft.start.label(this.minecraft.options));
+		return Math.max(1, (this.height - FIRST_ROW_Y - 36) / ROW_HEIGHT);
 	}
 
 	private static Double parse(String text) {
@@ -276,11 +236,9 @@ public class RouteScreen extends Screen {
 	/** Editable copy of the route, kept across reopens of the screen. */
 	static final class Draft {
 		final List<Row> rows = new ArrayList<>();
-		MoveAction start;
 
 		static Draft from(Route route) {
 			Draft draft = new Draft();
-			draft.start = route.start;
 
 			for (Route.Point point : route.points) {
 				Row row = new Row();

@@ -24,9 +24,6 @@ public final class Route {
 	/** Turn points. They have no order: whichever one the player walks into is used. */
 	public List<Point> points = new ArrayList<>();
 
-	/** Key locked when the route is started; STOP means "start walking yourself". */
-	public MoveAction start = MoveAction.STOP;
-
 	public static final class Point {
 		public double x;
 		public double y;
@@ -93,10 +90,6 @@ public final class Route {
 
 		while (points.size() > MAX_POINTS) {
 			points.remove(points.size() - 1);
-		}
-
-		if (start == null) {
-			start = MoveAction.STOP;
 		}
 	}
 

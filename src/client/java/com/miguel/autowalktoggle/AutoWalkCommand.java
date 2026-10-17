@@ -29,40 +29,7 @@ public final class AutoWalkCommand {
 				.then(ClientCommands.literal("menu").executes(context -> {
 					RouteScreen.requestOpen();
 					return 1;
-				}))
-				.then(ClientCommands.literal("route")
-						.executes(AutoWalkCommand::routeStatus)
-						.then(ClientCommands.literal("start").executes(AutoWalkCommand::routeStart))
-						.then(ClientCommands.literal("stop").executes(AutoWalkCommand::routeStop))
-						.then(ClientCommands.literal("status").executes(AutoWalkCommand::routeStatus))));
-	}
-
-	private static int routeStart(CommandContext<FabricClientCommandSource> context) {
-		if (RouteRunner.start(context.getSource().getClient())) {
-			send(context, Component.translatable("autowalktoggle.command.route.started", RouteRunner.route().points.size()).withStyle(ChatFormatting.GREEN));
-		} else {
-			send(context, Component.translatable("autowalktoggle.command.route.empty").withStyle(ChatFormatting.RED));
-		}
-
-		return 1;
-	}
-
-	private static int routeStop(CommandContext<FabricClientCommandSource> context) {
-		RouteRunner.stop();
-		send(context, Component.translatable("autowalktoggle.command.route.stopped").withStyle(ChatFormatting.RED));
-		return 1;
-	}
-
-	private static int routeStatus(CommandContext<FabricClientCommandSource> context) {
-		int points = RouteRunner.route().points.size();
-
-		if (RouteRunner.isActive()) {
-			send(context, Component.translatable("autowalktoggle.command.route.running", points).withStyle(ChatFormatting.GREEN));
-		} else {
-			send(context, Component.translatable("autowalktoggle.command.route.idle", points).withStyle(ChatFormatting.YELLOW));
-		}
-
-		return 1;
+				})));
 	}
 
 	/** /autowalk w|s: walk as if the forward / back key had been tapped with the mod enabled. */
@@ -86,9 +53,9 @@ public final class AutoWalkCommand {
 
 	private static int status(CommandContext<FabricClientCommandSource> context) {
 		if (AutoWalkController.isEnabled()) {
-			send(context, Component.translatable("autowalktoggle.command.status.enabled").withStyle(ChatFormatting.GREEN));
+			send(context, Component.translatable("autowalktoggle.command.status.enabled", RouteRunner.route().points.size()).withStyle(ChatFormatting.GREEN));
 		} else {
-			send(context, Component.translatable("autowalktoggle.command.status.disabled").withStyle(ChatFormatting.RED));
+			send(context, Component.translatable("autowalktoggle.command.status.disabled", RouteRunner.route().points.size()).withStyle(ChatFormatting.RED));
 		}
 
 		return 1;

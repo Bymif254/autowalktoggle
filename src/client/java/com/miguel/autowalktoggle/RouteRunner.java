@@ -9,7 +9,8 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * Follows the route: while a movement key is locked, switches to a point's key exactly when the player should turn.
+ * Follows the route: while the mod is enabled and a movement key is locked, switches to a point's key exactly when
+ * the player should turn. There is nothing to start: if there are points, they work.
  *
  * <p>Points have no order: any point the player walks towards is used, so stopping, walking elsewhere or coming
  * back to any position just works. A point is "disarmed" after it triggers, and when the player starts walking
@@ -35,7 +36,6 @@ public final class RouteRunner {
 	private static final double REARM_DISTANCE = 1.0;
 
 	private static Route route = Route.load();
-	private static boolean active = false;
 	private static final Set<Integer> disarmed = new HashSet<>();
 
 	/** Standing still at a point with a wait time; the action to do when the wait ends. */
@@ -55,42 +55,9 @@ public final class RouteRunner {
 		route = newRoute;
 		route.save();
 		disarmed.clear();
-
-		if (route.points.isEmpty()) {
-			active = false;
-		}
 	}
 
-	public static boolean isActive() {
-		return active;
-	}
-
-	/** Activates the route and, if a start key is set, starts walking with it. Returns false if the route is empty. */
-	public static boolean start(Minecraft client) {
-		if (route.points.isEmpty()) {
-			return false;
-		}
-
-		active = true;
-		disarmed.clear();
-
-		KeyMapping startKey = route.start.key(client.options);
-
-		if (startKey != null) {
-			AutoWalkController.requestLock(startKey);
-		} else {
-			AutoWalkController.setEnabled(true);
-		}
-
-		return true;
-	}
-
-	public static void stop() {
-		active = false;
-		waiting = false;
-	}
-
-	/** Disconnect / world change / mod disabled: forget any wait in progress. The route stays active. */
+	/** Disconnect / world change / mod disabled: forget any wait in progress. */
 	static void reset() {
 		waiting = false;
 		disarmed.clear();
@@ -139,7 +106,7 @@ public final class RouteRunner {
 	static void onLockedTick(Minecraft client) {
 		LocalPlayer player = client.player;
 
-		if (!active || player == null || route.points.isEmpty()) {
+		if (player == null || route.points.isEmpty()) {
 			return;
 		}
 
