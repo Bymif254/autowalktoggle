@@ -52,8 +52,18 @@ public final class AutoWalkController {
 
 		if (!value) {
 			pendingKey = null;
+			RouteRunner.stop();
 			releaseLockedKey();
 		}
+	}
+
+	/**
+	 * Route point reached: lock another key (or none). Only called from {@link RouteRunner#onLockedTick} at the
+	 * start of a tick, before the key is forced, so the old KeyMapping already holds its real keyboard state.
+	 */
+	static void changeLockedKey(KeyMapping key) {
+		lockedKey = key;
+		lockedKeyPhysicallyDown = false;
 	}
 
 	/** /autowalk w|s: enables the mod and locks the given movement key as soon as the chat closes. */
@@ -142,8 +152,14 @@ public final class AutoWalkController {
 				return;
 			}
 
-			lockedKeyPhysicallyDown = lockedKey.isDown();
-			lockedKey.setDown(true);
+			// Route: may switch to another key (or stop) when a point is reached.
+			RouteRunner.onLockedTick(client);
+
+			if (lockedKey != null) {
+				lockedKeyPhysicallyDown = lockedKey.isDown();
+				lockedKey.setDown(true);
+			}
+
 			return;
 		}
 
@@ -174,6 +190,7 @@ public final class AutoWalkController {
 	/** Called on disconnect / join. */
 	public static void reset() {
 		pendingKey = null;
+		RouteRunner.stop();
 		releaseLockedKey();
 		lastLevel = null;
 	}

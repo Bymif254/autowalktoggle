@@ -17,6 +17,9 @@ public class AutoWalkToggleClient implements ClientModInitializer {
 		ClientTickEvents.START_CLIENT_TICK.register(AutoWalkController::onStartTick);
 		ClientTickEvents.END_CLIENT_TICK.register(AutoWalkController::onEndTick);
 
+		// /autowalk menu opens the route editor once the chat has closed.
+		ClientTickEvents.END_CLIENT_TICK.register(RouteScreen::onEndTick);
+
 		// Release the locked key when leaving or joining a world/server.
 		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> AutoWalkController.reset());
 		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> AutoWalkController.reset());
