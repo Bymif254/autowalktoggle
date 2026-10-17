@@ -16,6 +16,7 @@ import net.fabricmc.loader.api.FabricLoader;
 /** The list of route points, saved to config/autowalktoggle-route.json. */
 public final class Route {
 	public static final int MAX_POINTS = 32;
+	public static final double MAX_WAIT_SECONDS = 60;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AutoWalkToggleClient.MOD_ID);
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -34,15 +35,18 @@ public final class Route {
 		public double y;
 		public double z;
 		public MoveAction action = MoveAction.STOP;
+		/** Seconds to stand still at the point before pressing the new key (0 = turn immediately). */
+		public double wait = 0;
 
 		public Point() {
 		}
 
-		public Point(double x, double y, double z, MoveAction action) {
+		public Point(double x, double y, double z, MoveAction action, double wait) {
 			this.x = x;
 			this.y = y;
 			this.z = z;
 			this.action = action;
+			this.wait = wait;
 		}
 	}
 
@@ -86,6 +90,8 @@ public final class Route {
 			if (point.action == null) {
 				point.action = MoveAction.STOP;
 			}
+
+			point.wait = Math.max(0, Math.min(MAX_WAIT_SECONDS, point.wait));
 		});
 
 		while (points.size() > MAX_POINTS) {

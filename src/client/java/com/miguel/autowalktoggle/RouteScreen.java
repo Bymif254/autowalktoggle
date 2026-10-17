@@ -21,7 +21,7 @@ import net.minecraft.network.chat.Component;
 public class RouteScreen extends Screen {
 	private static final int ROW_HEIGHT = 24;
 	private static final int FIRST_ROW_Y = 44;
-	private static final int TOTAL_WIDTH = 358;
+	private static final int TOTAL_WIDTH = 366;
 
 	private static boolean openRequested = false;
 
@@ -62,10 +62,11 @@ public class RouteScreen extends Screen {
 			addLabel(status, this.width / 2, 20, true);
 		}
 
-		addLabel(Component.literal("X"), left + 22 + 30, 32, true);
-		addLabel(Component.literal("Y"), left + 90 + 22, 32, true);
-		addLabel(Component.literal("Z"), left + 142 + 30, 32, true);
-		addLabel(Component.translatable("autowalktoggle.menu.action"), left + 210 + 45, 32, true);
+		addLabel(Component.literal("X"), left + 22 + 28, 32, true);
+		addLabel(Component.literal("Y"), left + 82 + 20, 32, true);
+		addLabel(Component.literal("Z"), left + 126 + 28, 32, true);
+		addLabel(Component.translatable("autowalktoggle.menu.wait"), left + 186 + 17, 32, true);
+		addLabel(Component.translatable("autowalktoggle.menu.action"), left + 224 + 42, 32, true);
 
 		for (int i = 0; i < rowsPerPage; i++) {
 			int index = currentPage * rowsPerPage + i;
@@ -89,7 +90,7 @@ public class RouteScreen extends Screen {
 		addRenderableWidget(Button.builder(startLabel(), button -> {
 			draft.start = draft.start.next();
 			button.setMessage(startLabel());
-		}).bounds(left + 238, bottom1, 120, 20).build());
+		}).bounds(left + 238, bottom1, 128, 20).build());
 
 		addRenderableWidget(Button.builder(Component.literal("<"), button -> reopen(currentPage - 1, null))
 				.bounds(left, bottom2, 20, 20).build()).active = currentPage > 0;
@@ -103,21 +104,22 @@ public class RouteScreen extends Screen {
 			reopen(currentPage, Component.translatable("autowalktoggle.menu.stopped").withStyle(ChatFormatting.YELLOW));
 		}).bounds(left + 176, bottom2, 80, 20).build());
 		addRenderableWidget(Button.builder(Component.translatable("autowalktoggle.menu.save"), button -> saveAndClose(currentPage))
-				.bounds(left + 260, bottom2, 98, 20).build());
+				.bounds(left + 260, bottom2, 106, 20).build());
 	}
 
 	private void addRow(int index, int left, int y, int currentPage) {
 		Row row = draft.rows.get(index);
 
 		addLabel(Component.literal("#" + (index + 1)), left + 9, y + 6, true);
-		EditBox xBox = addCoordinateBox(left + 22, y, 60, row.x, "X", value -> row.x = value);
-		EditBox yBox = addCoordinateBox(left + 90, y, 44, row.y, "Y", value -> row.y = value);
-		EditBox zBox = addCoordinateBox(left + 142, y, 60, row.z, "Z", value -> row.z = value);
+		EditBox xBox = addCoordinateBox(left + 22, y, 56, row.x, "X", value -> row.x = value);
+		EditBox yBox = addCoordinateBox(left + 82, y, 40, row.y, "Y", value -> row.y = value);
+		EditBox zBox = addCoordinateBox(left + 126, y, 56, row.z, "Z", value -> row.z = value);
+		addCoordinateBox(left + 186, y, 34, row.wait, "s", value -> row.wait = value);
 
 		addRenderableWidget(Button.builder(row.action.label(this.minecraft.options), button -> {
 			row.action = row.action.next();
 			button.setMessage(row.action.label(this.minecraft.options));
-		}).bounds(left + 210, y, 90, 20).build());
+		}).bounds(left + 224, y, 84, 20).build());
 
 		// Fill this row with the player's exact current position.
 		addRenderableWidget(Button.builder(Component.translatable("autowalktoggle.menu.here"), button -> {
@@ -128,12 +130,12 @@ public class RouteScreen extends Screen {
 				yBox.setValue(format(player.getY()));
 				zBox.setValue(format(player.getZ()));
 			}
-		}).bounds(left + 304, y, 30, 20).build());
+		}).bounds(left + 312, y, 30, 20).build());
 
 		addRenderableWidget(Button.builder(Component.literal("x"), button -> {
 			draft.rows.remove(index);
 			reopen(currentPage, null);
-		}).bounds(left + 338, y, 20, 20).build());
+		}).bounds(left + 346, y, 20, 20).build());
 	}
 
 	private EditBox addCoordinateBox(int x, int y, int width, String value, String hint, java.util.function.Consumer<String> responder) {
@@ -220,13 +222,14 @@ public class RouteScreen extends Screen {
 			Double x = parse(row.x);
 			Double y = parse(row.y);
 			Double z = parse(row.z);
+			Double wait = row.wait.isBlank() ? Double.valueOf(0) : parse(row.wait);
 
-			if (x == null || y == null || z == null) {
+			if (x == null || y == null || z == null || wait == null || wait < 0 || wait > Route.MAX_WAIT_SECONDS) {
 				reopen(currentPage, Component.translatable("autowalktoggle.menu.invalid", i + 1).withStyle(ChatFormatting.RED));
 				return null;
 			}
 
-			route.points.add(new Route.Point(x, y, z, row.action));
+			route.points.add(new Route.Point(x, y, z, row.action, wait));
 		}
 
 		return route;
@@ -265,11 +268,18 @@ public class RouteScreen extends Screen {
 		return String.format(Locale.ROOT, "%.3f", value);
 	}
 
+	/** 0.5 -> "0.5", 2.0 -> "2". */
+	private static String formatSeconds(double seconds) {
+		String text = String.format(Locale.ROOT, "%.2f", seconds);
+		return text.replaceAll("\\.?0+$", "");
+	}
+
 	/** One editable row: coordinates kept as text while editing. */
 	static final class Row {
 		String x = "";
 		String y = "";
 		String z = "";
+		String wait = "0";
 		MoveAction action = MoveAction.FORWARD;
 	}
 
@@ -289,6 +299,7 @@ public class RouteScreen extends Screen {
 				row.x = format(point.x);
 				row.y = format(point.y);
 				row.z = format(point.z);
+				row.wait = formatSeconds(point.wait);
 				row.action = point.action;
 				draft.rows.add(row);
 			}

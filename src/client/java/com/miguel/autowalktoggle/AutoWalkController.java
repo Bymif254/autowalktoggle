@@ -136,12 +136,30 @@ public final class AutoWalkController {
 
 			lockedKey = pendingKey;
 			pendingKey = null;
+			RouteRunner.cancelWait();
 			lockedKeyPhysicallyDown = lockedKey.isDown();
 			lockedKey.setDown(true);
 			return;
 		}
 
-		// 5. A key is already locked.
+		// 5. Route stopped at a point and waiting before turning. Pressing a direction yourself cancels the wait.
+		if (lockedKey == null && RouteRunner.isWaiting()) {
+			if (pressedOther != null) {
+				RouteRunner.cancelWait();
+			} else {
+				KeyMapping next = RouteRunner.tickWait(client);
+
+				if (next != null) {
+					lockedKey = next;
+					lockedKeyPhysicallyDown = next.isDown();
+					next.setDown(true);
+				}
+
+				return;
+			}
+		}
+
+		// 6. A key is already locked.
 		if (lockedKey != null) {
 			if (pressedLocked != null || pressedOther != null) {
 				// a) Same key pressed again, or b) another direction pressed: unlock.
@@ -163,7 +181,7 @@ public final class AutoWalkController {
 			return;
 		}
 
-		// 6. Nothing locked: a new press locks that key.
+		// 7. Nothing locked: a new press locks that key.
 		if (pressedOther != null) {
 			lockedKey = pressedOther;
 			lockedKeyPhysicallyDown = lockedKey.isDown();

@@ -27,6 +27,11 @@ public final class RouteRunner {
 	private static boolean running = false;
 	private static int nextIndex = 0;
 
+	/** Standing still at a point with a wait time; the action to do when the wait ends. */
+	private static boolean waiting = false;
+	private static int waitTicksLeft = 0;
+	private static MoveAction actionAfterWait = MoveAction.STOP;
+
 	private RouteRunner() {
 	}
 
@@ -79,6 +84,28 @@ public final class RouteRunner {
 
 	public static void stop() {
 		running = false;
+		waiting = false;
+	}
+
+	static boolean isWaiting() {
+		return waiting;
+	}
+
+	static void cancelWait() {
+		waiting = false;
+	}
+
+	/**
+	 * Called every tick (no menu open) while waiting at a point. Returns the key to lock when the wait is over,
+	 * or null while still waiting (also null if the point's action is STOP).
+	 */
+	static KeyMapping tickWait(Minecraft client) {
+		if (--waitTicksLeft > 0) {
+			return null;
+		}
+
+		waiting = false;
+		return actionAfterWait.key(client.options);
 	}
 
 	/** Called by AutoWalkController at the start of every tick in which a key is locked and no menu is open. */
@@ -90,12 +117,22 @@ public final class RouteRunner {
 		}
 
 		Route.Point target = route.points.get(nextIndex);
+		int waitTicks = (int) Math.round(target.wait * 20);
+		// With a wait, the player first stops exactly on the point (release the key), then turns.
+		MoveAction firstAction = waitTicks > 0 ? MoveAction.STOP : target.action;
 
-		if (!shouldTurnNow(player, target)) {
+		if (!shouldTurnNow(player, target, firstAction)) {
 			return;
 		}
 
-		AutoWalkController.changeLockedKey(target.action.key(client.options));
+		AutoWalkController.changeLockedKey(firstAction.key(client.options));
+
+		if (waitTicks > 0) {
+			waiting = true;
+			waitTicksLeft = waitTicks;
+			actionAfterWait = target.action;
+		}
+
 		nextIndex++;
 
 		if (nextIndex >= route.points.size()) {
@@ -107,7 +144,7 @@ public final class RouteRunner {
 		}
 	}
 
-	private static boolean shouldTurnNow(LocalPlayer player, Route.Point target) {
+	private static boolean shouldTurnNow(LocalPlayer player, Route.Point target, MoveAction action) {
 		if (Math.abs(player.getY() - target.y) > MAX_VERTICAL) {
 			return false;
 		}
@@ -139,7 +176,7 @@ public final class RouteRunner {
 		double step = speed + acceleration;
 
 		// Part of the new key's acceleration that pushes along the current direction (only braking counts).
-		double[] newDirection = target.action.direction(player.getYRot());
+		double[] newDirection = action.direction(player.getYRot());
 		double newAcceleration = Math.min(0, acceleration * (newDirection[0] * dirX + newDirection[1] * dirZ));
 		double slide = slideDistance(speed, newAcceleration, friction);
 
