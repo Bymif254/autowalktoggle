@@ -18,7 +18,6 @@ Con el mod activado, pulsas una vez una tecla de movimiento (las que tengas en C
 | `/autowalk status` | Muestra el estado |
 | `/autowalk w` | Empieza a andar hacia delante solo (activa el mod si estaba desactivado) |
 | `/autowalk s` | Empieza a andar hacia atrás solo (activa el mod si estaba desactivado) |
-
 | `/autowalk menu` | Abre el menú de la ruta |
 | `/autowalk route start` | Inicia la ruta guardada |
 | `/autowalk route stop` | Detiene la ruta |
