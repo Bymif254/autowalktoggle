@@ -19,6 +19,7 @@
 
 	"autowalktoggle.menu.title": "AutoWalk - Route",
 	"autowalktoggle.menu.action": "On arrival",
+	"autowalktoggle.menu.wait": "Wait",
 	"autowalktoggle.menu.here": "Here",
 	"autowalktoggle.menu.add": "+ Point at my position",
 	"autowalktoggle.menu.loop": "Loop: %s",
@@ -30,7 +31,7 @@
 	"autowalktoggle.menu.stop": "Stop",
 	"autowalktoggle.menu.save": "Save and close",
 	"autowalktoggle.menu.stopped": "Route stopped.",
-	"autowalktoggle.menu.invalid": "Point #%s has an invalid coordinate.",
+	"autowalktoggle.menu.invalid": "Point #%s has an invalid value (wait: 0 to 60 s).",
 	"autowalktoggle.menu.empty": "Add at least one point.",
 	"autowalktoggle.menu.full": "Maximum %s points."
 }

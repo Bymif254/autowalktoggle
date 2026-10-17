@@ -19,6 +19,7 @@
 
 	"autowalktoggle.menu.title": "AutoWalk - Ruta",
 	"autowalktoggle.menu.action": "Al llegar",
+	"autowalktoggle.menu.wait": "Espera",
 	"autowalktoggle.menu.here": "Aquí",
 	"autowalktoggle.menu.add": "+ Punto en mi posición",
 	"autowalktoggle.menu.loop": "Bucle: %s",
@@ -30,7 +31,7 @@
 	"autowalktoggle.menu.stop": "Detener",
 	"autowalktoggle.menu.save": "Guardar y cerrar",
 	"autowalktoggle.menu.stopped": "Ruta detenida.",
-	"autowalktoggle.menu.invalid": "El punto #%s tiene una coordenada no válida.",
+	"autowalktoggle.menu.invalid": "El punto #%s tiene un valor no válido (espera: 0 a 60 s).",
 	"autowalktoggle.menu.empty": "Añade al menos un punto.",
 	"autowalktoggle.menu.full": "Máximo %s puntos."
 }
